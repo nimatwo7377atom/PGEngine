@@ -22,6 +22,7 @@ from .make_shrink_map import MakeShrinkMap
 from .random_crop_data import EastRandomCropData, RandomCrop, RandomCropImgMask
 from .make_pse_gt import MakePseGt
 from .small_plate_zoom_crop import SmallPlateZoomCrop
+from .make_corner_heatmap import MakeCornerHeatmap
 
 from .rec_img_aug import (
     BaseDataAugmentation,
