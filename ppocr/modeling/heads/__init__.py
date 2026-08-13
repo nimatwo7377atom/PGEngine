@@ -25,6 +25,7 @@ def build_head(config):
     from .e2e_pg_head import PGHead
     from .det_ct_head import CT_Head
     from .det_sast_head_aux import SASTHeadWithAux
+    from .det_db_head_aux import DBHeadWithAux
     
     # rec head
     from .rec_ctc_head import CTCHead
