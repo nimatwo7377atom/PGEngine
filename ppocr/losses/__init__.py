@@ -27,6 +27,7 @@ from .det_pse_loss import PSELoss
 from .det_fce_loss import FCELoss
 from .det_ct_loss import CTLoss
 from .det_drrg_loss import DRRGLoss
+from .det_sast_loss_aux import SASTLossWithAux
 
 # rec loss
 from .rec_ctc_loss import CTCLoss
@@ -114,6 +115,7 @@ def build_loss(config):
         "UniMERNetLoss",
         "PPFormulaNet_S_Loss",
         "PPFormulaNet_L_Loss",
+        "SASTLossWithAux",
     ]
     config = copy.deepcopy(config)
     module_name = config.pop("name")
