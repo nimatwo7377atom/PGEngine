@@ -29,7 +29,8 @@ def build_neck(config):
     from .ct_fpn import CTFPN
     from .fpn_unet import FPN_UNet
     from .rf_adaptor import RFAdaptor
-
+    from .replk_fpn_det import RepLKFPN_Det
+    
     support_dict = [
         "FPN",
         "FCEFPN",
@@ -48,6 +49,7 @@ def build_neck(config):
         "CTFPN",
         "RFAdaptor",
         "FPN_UNet",
+        "RepLKFPN_Det",
     ]
 
     module_name = config.pop("name")
