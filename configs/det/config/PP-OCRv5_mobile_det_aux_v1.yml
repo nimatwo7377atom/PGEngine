@@ -6,13 +6,13 @@ Global:
   log_smooth_window: 5
   print_batch_step: 100
   save_model_dir: ./output/PP-OCRv5_mobile_det_aux
-  save_epoch_step: 10
+  save_epoch_step: 1
   eval_batch_step:
   - 1000
   - 200
   cal_metric_during_train: false
   checkpoints:
-  pretrained_model: /content/PaddleOCR/pretrained/PP-OCRv5_mobile_det_pretrained_REMAPPED.pdparams
+  pretrained_model: /content/PGEngine/pretrained/PP-OCRv5_mobile_det_pretrained_REMAPPED.pdparams
   save_inference_dir: null
   use_visualdl: false
   infer_img: doc/imgs_en/img_10.jpg
@@ -116,7 +116,7 @@ Train:
         total_epoch: *epoch_num
     - MakeShrinkMap:
         shrink_ratio: 0.4
-        min_text_size: 8
+        min_text_size: 4
         total_epoch: *epoch_num
     - MakeCornerHeatmap:
         # New: builds the 4-channel corner heatmap target. radius is in
