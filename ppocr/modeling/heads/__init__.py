@@ -94,6 +94,7 @@ def build_head(config):
         "UniMERNetHead",
         "PPFormulaNet_Head",
         "SASTHeadWithAux",
+        "DBHeadWithAux",
     ]
 
     if config["name"] == "DRRGHead":
