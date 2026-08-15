@@ -14,7 +14,7 @@ Global:
   checkpoints:
   # start from the converged v3 plate detector, not ImageNet: only the
   # boundary geometry of the target changes, the plate features do not.
-  pretrained_model: /content/PaddleOCR/pretrained/PP-OCRv5_mobile_det_pretrained.pdparams
+  pretrained_model: /content/PGEngine/pretrained/PP-OCRv5_mobile_det_pretrained.pdparams
   save_inference_dir: ./inference_model/inference
   use_visualdl: false
   infer_img: doc/imgs_en/img_10.jpg
