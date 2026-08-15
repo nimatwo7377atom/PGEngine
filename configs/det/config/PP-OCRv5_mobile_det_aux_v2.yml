@@ -1,0 +1,191 @@
+Global:
+  model_name: PP-OCRv5_mobile_det_aux_v2
+  debug: false
+  use_gpu: true
+  epoch_num: &epoch_num 30
+  log_smooth_window: 5
+  print_batch_step: 100
+  save_model_dir: ./output/PP-OCRv5_mobile_det_aux_v2
+  save_epoch_step: 1
+  eval_batch_step:
+  - 0
+  - 150
+  cal_metric_during_train: false
+  checkpoints: 
+  pretrained_model: /content/PGEngine/pretrained/PP-OCRv5_mobile_det_pretrained_REMAPPED.pdparams
+  save_inference_dir: null
+  use_visualdl: false
+  infer_img: doc/imgs_en/img_10.jpg
+  save_res_path: ./checkpoints/det_db/predicts_db.txt
+  d2s_train_image_shape: [3, 960, 960]
+  distributed: true
+
+Architecture:
+  model_type: det
+  algorithm: DB
+  Transform: null
+  Backbone:
+    name: PPLCNetV3
+    scale: 0.75
+    det: True
+  Neck:
+    name: RSEFPN
+    out_channels: 96
+    shortcut: True
+  Head:
+    # Swapped from DBHead -> DBHeadWithAux. At inference this behaves
+    # identically to DBHead (see det_db_head_aux.py), so export/serving
+    # code needs no changes at all.
+    name: DBHeadWithAux
+    k: 50
+    fix_nan: True
+    always_aux: True     # جدید: heatmap در استنتاج هم تولید شود
+    aux_upsample: 4      # جدید: خروجی stride-1 (دو مرحله upsample)
+
+Loss:
+  # Swapped from DBLoss -> DBLossWithAux (adds the weighted aux term).
+  name: DBLossWithAux
+  aux_loss_weight: 0.5   # start here; tune down to 0 to fall back to plain DBLoss behavior
+  balance_loss: true
+  main_loss_type: DiceLoss
+  alpha: 5
+  beta: 10
+  ohem_ratio: 3
+
+Optimizer:
+  name: Adam
+  beta1: 0.9
+  beta2: 0.999
+  lr:
+    name: Cosine
+    learning_rate: 0.0001
+    warmup_epoch: 2
+  regularizer:
+    name: L2
+    factor: 5.0e-05
+
+PostProcess:
+  # Unchanged - still plain DBPostProcess. The aux head has nothing to do
+  # with how boxes are decoded at inference.
+  name: DBPostProcess
+  thresh: 0.3
+  box_thresh: 0.7
+  max_candidates: 1000
+  unclip_ratio: 1.5
+
+Metric:
+  name: DetMetric
+  main_indicator: hmean
+
+Train:
+  dataset:
+    name: SimpleDataSet
+    data_dir: /content/my_dataset/
+    label_file_list:
+      - /content/my_dataset/train.txt
+    ratio_list: [1.0]
+    transforms:
+    - DecodeImage:
+        img_mode: BGR
+        channel_first: false
+    - DetLabelEncode: null
+    - CopyPaste: null
+    - IaaAugment:
+        augmenter_args:
+        - type: Fliplr
+          args:
+            p: 0.5
+        - type: Affine
+          args:
+            rotate:
+            - -30
+            - 30
+        - type: Resize
+          args:
+            size:
+            - 0.5
+            - 3
+    - EastRandomCropData:
+        size:
+        - 768
+        - 768
+        max_tries: 50
+        keep_ratio: true
+    - MakeBorderMap:
+        shrink_ratio: 0.4
+        thresh_min: 0.3
+        thresh_max: 0.7
+        total_epoch: *epoch_num
+    - MakeShrinkMap:
+        shrink_ratio: 0.4
+        min_text_size: 4
+        total_epoch: *epoch_num
+    - MakeCornerHeatmap:
+        # New: builds the 4-channel corner heatmap target. radius is in
+        # pixels at whatever resolution downsample_stride puts it at.
+        radius: 4
+        downsample_stride: 1   # see make_corner_heatmap.py notes on tuning this
+    - NormalizeImage:
+        scale: 1./255.
+        mean:
+        - 0.485
+        - 0.456
+        - 0.406
+        std:
+        - 0.229
+        - 0.224
+        - 0.225
+        order: hwc
+    - ToCHWImage: null
+    - KeepKeys:
+        keep_keys:
+        - image
+        - threshold_map
+        - threshold_mask
+        - shrink_map
+        - shrink_mask
+        - corner_heatmap   # new: must flow through to the loss
+  loader:
+    shuffle: true
+    drop_last: false
+    batch_size_per_card: 8
+    num_workers: 8
+
+Eval:
+  # Unchanged. Evaluation only needs polys/shape - the aux head is inert
+  # here anyway since model.training == False during eval.
+  dataset:
+    name: SimpleDataSet
+    data_dir: /content/my_dataset/
+    label_file_list:
+      - /content/my_dataset/train.txt
+    transforms:
+    - DecodeImage:
+        img_mode: BGR
+        channel_first: false
+    - DetLabelEncode: null
+    - DetResizeForTest:
+    - NormalizeImage:
+        scale: 1./255.
+        mean:
+        - 0.485
+        - 0.456
+        - 0.406
+        std:
+        - 0.229
+        - 0.224
+        - 0.225
+        order: hwc
+    - ToCHWImage: null
+    - KeepKeys:
+        keep_keys:
+        - image
+        - shape
+        - polys
+        - ignore_tags
+  loader:
+    shuffle: false
+    drop_last: false
+    batch_size_per_card: 1
+    num_workers: 1
+profiler_options: null
