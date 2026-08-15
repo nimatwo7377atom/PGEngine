@@ -10,7 +10,7 @@ Global:
   eval_batch_step: [2000, 500]        # نه [0,...] - جلوگیری از انفجار NMS روی هد تصادفی
   cal_metric_during_train: false
   checkpoints:
-  pretrained_model: /content/PaddleOCR/pretrained/PP-OCRv5_mobile_det_pretrained.pdparams  # همان نقطه‌ی شروع ران A برای مقایسه‌ی منصفانه
+  pretrained_model: /content/PGEngine/pretrained/PP-OCRv5_mobile_det_pretrained.pdparams  # همان نقطه‌ی شروع ران A برای مقایسه‌ی منصفانه
   save_inference_dir: null
   use_visualdl: false
   infer_img: doc/imgs_en/img_10.jpg
